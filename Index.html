@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>expanding hierarchy table example</title>
+
+  <style>
+    body {
+      font-family: Verdana, Geneva, sans-serif;
+    }
+
+    table {
+      border-collapse: collapse;
+    }
+
+    table.dbtablestyle {
+      border: 1px solid Grey;
+      border-spacing: 0;
+      margin-left: auto;
+      margin-right: auto;
+      table-layout: fixed;
+    }
+
+
+    /* table.dbtablestyle th {
+      border-bottom: 1px solid Grey;
+      border-right: 1px solid Grey;
+      padding: 3px;
+      background-color: LightGrey;
+    } */
+
+    table.dbtablestyle td {
+      border-bottom: 1px solid Grey;
+      border-right: 1px solid Grey;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    table.dbtablestyle td:hover {
+      background-color: #eee;
+    }
+
+    table.dbtablestyle td:last-child {
+      border-bottom: 1px solid Grey;
+      border-right: none;
+      padding: 10px;
+    }
+
+    .loading {
+      opacity: 0;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 30px;
+      color: blue;
+
+    }
+
+    .BGImage {
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 150px;
+      overflow: hidden;
+      box-sizing: border-box;
+      border: 2px solid #444;
+    }
+
+    .imgContainer {
+      position: relative;
+      width: 250px;
+      height: 150px;
+    }
+
+    .imageDiv1 {
+      position: absolute;
+      top: 42.5px;
+      left: 42.5px;
+      line-height: 0px;
+      width: 60px;
+      height: 60px;
+      box-sizing: border-box;
+      border: 1px solid black;
+    }
+
+    .imageDiv2 {
+      position: absolute;
+      top: 42.5px;
+      left: 145px;
+      line-height: 0px;
+      width: 60px;
+      height: 60px;
+      box-sizing: border-box;
+      border: 1px solid black;
+    }
+
+    .tableHeader {
+      box-sizing: border-box;
+      border: 1px solid black;
+
+    }
+
+    .imgTd {
+      padding: 5px !important;
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="all_the_content_div">
+
+</body>
+<script type="text/javascript">
+  //table_expand_0.html -table drawn from var table_items[][]  -no animation yet, fully expanded
+  let rowId0Position = 0;
+  let columnId0Position = 0;
+  let rowId1Position = 0;
+  let columnId1Position = 0;
+  let rotId0 = 0;
+  let rotId1 = 0;
+  let spriteSheet = new Image();
+  spriteSheet.src = "images/arrowsPlusBG6000x750.png";
+  var containerQuerySelector = document.querySelector('#all_the_content_div');
+  //-------------listener for scroll------------
+  var scrollCount = 0;
+  window.onscroll = function() {
+    checkTablePosition();
+  };
+
+  //----------------------------------------------
+  var imgHeaderBGColor = '#ddf';
+  var table_schema = [{
+      'name': 'jobID',
+      'color': '#eee',
+      'txcolor': 'black'
+    },
+    {
+      'name': 'image',
+      'color': imgHeaderBGColor,
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Arrow Img 1',
+      'color': imgHeaderBGColor,
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Rotation (CCW)',
+      'color': imgHeaderBGColor,
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Arrow Img 2',
+      'color': imgHeaderBGColor,
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Rotation (CCW)',
+      'color': imgHeaderBGColor,
+      'txcolor': 'black'
+    },
+    {
+      'name': 'row_type',
+      'color': 'lightGrey',
+      'txcolor': 'black'
+    },
+    {
+      'name': 'StartDate',
+      'color': 'lightGrey',
+      'txcolor': 'black'
+    },
+    {
+      'name': 'CustomerName',
+      'color': '#aaa',
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Product Name',
+      'color': '#aaa',
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Design Page Number',
+      'color': '#aaa',
+      'txcolor': 'black'
+    },
+    {
+      'name': 'Part Number',
+      'color': '#aaa',
+      'txcolor': 'black'
+    }
+  ];
+
+  var table_row_types = [{
+      "name": "Product",
+      "sortcolumn": "Prod. ID",
+      "color": "#deefee"
+    },
+    {
+      "name": "Assembly",
+      "sortcolumn": "Assembly ID",
+      "color": "#ccccdd"
+    },
+    {
+      "name": "Component",
+      "sortcolumn": "Part No.",
+      "color": "#cdddee"
+    },
+    {
+      "name": "Material",
+      "sortcolumn": "Part No.",
+      "color": "#ddd"
+    },
+    {
+      "name": "Holder",
+      "sortcolumn": "Part No.",
+      "color": "#e6f2ffc"
+    }
+  ];
+
+  var table_items1 = [];
+
+  var table_itemsOriginal = [{
+      "jobID": "1",
+      "row_type": "Product",
+      "StartDate": "2018-01-01",
+      "CustomerName": "ABC Inc",
+      'Product Name': "widget"
+    },
+    {
+      "jobID": "2",
+      "row_type": "Assembly",
+      "StartDate": "2018-01-02",
+      "CustomerName": "ABC Inc",
+      'Product Name': "widget",
+      'Design Page Number': "23"
+    },
+    {
+      "jobID": "3",
+      "row_type": "Product",
+      "StartDate": "2018-07-01",
+      "CustomerName": "XYZ Inc",
+      'Product Name': "widget"
+    },
+    {
+      "jobID": "4",
+      "row_type": "Assembly",
+      "StartDate": "2018-07-01",
+      'Product Name': "widget",
+      'Design Page Number': "23"
+    },
+    {
+      "jobID": "4a",
+      "row_type": "Component",
+      "StartDate": "2018-07-20",
+      "CustomerName": "XYZ Inc",
+      'Product Name': "widget",
+      'Design Page Number': "23",
+      'Part Number': "14"
+    },
+    {
+      "jobID": "4b",
+      "row_type": "Assembly",
+      "StartDate": "2018-07-02",
+      'Product Name': "widget",
+      'Design Page Number': "25"
+    },
+    {
+      "jobID": "5",
+      "row_type": "Component",
+      "StartDate": "2018-07-17",
+      "CustomerName": "XYZ Inc",
+      'Product Name': "widget",
+      'Design Page Number': "23",
+      'Part Number': "1"
+    },
+    {
+      "jobID": "6",
+      "row_type": "Component",
+      "StartDate": "2018-07-17",
+      "CustomerName": "XYZ Inc",
+      'Product Name': "widget",
+      'Design Page Number': "23",
+      'Part Number': "1"
+    },
+    {
+      "jobID": "7",
+      "row_type": "Material",
+      "StartDate": "2018-07-17",
+      "CustomerName": "XYZ Inc",
+      'Product Name': "widget",
+      'Design Page Number': "23",
+      'Part Number': "1"
+    },
+    {
+      "jobID": "8",
+      "row_type": "Holder",
+      "StartDate": "2018-07-17",
+      "CustomerName": "XYZ Inc",
+      'Product Name': "widget",
+      'Design Page Number': "23",
+      'Part Number': "1"
+    }
+  ];
+  //add more onto table_items[]
+  var customers = ["ABC Inc", "XYZ Inc", "Martin Inc", "Markco", "IBM"];
+  var product_names = ["widget", "box", "flange", "nut", "bolt"];
+  var ii;
+  for (ii = table_items1.length; ii < 50000; ii++) {
+    var tempRot1 = (Math.floor(Math.random() * 4) * 90) * -1;
+    var tempRot2 = (Math.floor(Math.random() * 4) * 90) * -1;
+    table_items1.push({
+      "jobID": ii.toString(),
+      "image": "",
+      "Arrow1": ii,
+      "Rotation1": tempRot1,
+      "Arrow2": ii,
+      "Rotation2": tempRot2,
+      "row_type": table_row_types[ii % table_row_types.length].name,
+      "StartDate": "2018-07-17",
+      "CustomerName": customers[ii % customers.length],
+      "Product Name": product_names[ii % product_names.length],
+      'Design Page Number': (ii * 2).toString(),
+      'Part Number': (ii % 7).toString()
+    });
+  }
+
+  var amountToRenederAtATime = 1000;
+  table_draw(table_items1.slice(0, amountToRenederAtATime));
+  var tableQuerySelector = document.querySelector('#tableInsert');
+
+
+  //----------------------additional elements function-----------------
+  var nextHTMLCount = 1;
+
+  function addRows() {
+    //----slice start and end values
+    var startIndex = nextHTMLCount * amountToRenederAtATime;
+    var endIndex = startIndex + amountToRenederAtATime;
+    //----slice array into variable
+    var itemArray = table_items1.slice(startIndex, endIndex);
+    //----call function with next array slice to add additional table rows
+    table_draw_additional_rows(itemArray);
+    nextHTMLCount++;
+  }
+
+  //----------------------scroll near bottom of table detection-----------
+  var tableBottomPosition = 0;
+  var windowHeight = window.innerHeight;
+  var distanceFromBottom = 2000; // change this value for distance from bottom to instigate loading
+  var tableRect = document.querySelector('#tableInsert');
+  //----check if bottom of table is close to window bottom
+  async function checkTablePosition() {
+    var bottomPosition = tableRect.getBoundingClientRect().bottom;
+    if (bottomPosition < windowHeight + distanceFromBottom) {
+      console.log("bottom");
+      addRows();
+    }
+  }
+
+  //---------------- table view ----------
+  function table_draw(tableArray) {
+    //----create elements and place in variables
+    var rowsFragment = document.createDocumentFragment();
+    var tempFragment = document.createDocumentFragment();
+    var tableElement = document.createElement('table');
+    var tableHeader = document.createElement('tr');
+    //----set attributes for elements
+    tableElement.setAttribute("class", "dbtablestyle");
+    tableElement.addEventListener("click", edit_cell, false);
+    tableElement.setAttribute("id", "tableInsert");
+    //----loop through array adding elements with attributes and content
+    for (i = 0; i < table_schema.length; i++) {
+      tempFragment = document.createElement('th');
+      tempFragment.setAttribute("class", "tableHeader");
+      tempFragment.setAttribute("style", "background-color:" + table_schema[i].color + ";color:" + table_schema[i].txcolor + "; ");
+      tempFragment.textContent = table_schema[i].name;
+      //----append element to fragment
+      tableHeader.appendChild(tempFragment);
+    }
+    for (var i = 0; i < tableArray.length; i++) {
+      rowsFragment.appendChild(create_row_data(tableArray[i], i));
+    }
+    tableElement.appendChild(tableHeader);
+    tableElement.appendChild(rowsFragment);
+    //document.getElementById('all_the_content_div').appendChild(tableElement);
+    containerQuerySelector.appendChild(tableElement);
+
+  }
+
+  //-----------------------create next rows-----------------
+  function table_draw_additional_rows(tableArray) {
+
+    //console.time("time to add next 1000 rows");
+    var additionalRows = document.createDocumentFragment();
+    for (var i = 0; i < tableArray.length; i++) {
+      additionalRows.appendChild(create_row_data(tableArray[i], i));
+    }
+    tableQuerySelector.appendChild(additionalRows);
+    //document.getElementById('tableInsert').appendChild(additionalRows);
+    //console.timeEnd("time to add next 1000 rows");
+  }
+
+  //-----------------------------create rows---------------------
+  function create_row_data(item, count) { //'item' is a single row
+    var fragmentRow = document.createDocumentFragment();
+    var rowElement = document.createElement('tr');
+    var rowcol = "";
+    for (i = 0; i < table_row_types.length; i++) {
+      for (var j = 0; j < table_row_types.length; j++) {
+        if (item.row_type === table_row_types[j].name) {
+          rowcol = table_row_types[j].color;
+        }
+      }
+    }
+    //----get object keys
+    var rowKeys = Object.getOwnPropertyNames(item);
+    //----loop through creating cells
+    for (var ii = 0; ii < rowKeys.length; ii++) {
+      if (ii == 1) { //----if second cell make image
+        var tableDataEl = document.createElement('td');
+        tableDataEl.setAttribute("class", "imgTd");
+        var rotation1 = item['Rotation1'];
+        var rotation2 = item['Rotation2'];
+        tableDataEl.appendChild(create_combined_image(count, rotation1, count, rotation2));
+        rowElement.appendChild(tableDataEl);
+      } else {
+        var tableDataEl = document.createElement('td');
+        tableDataEl.textContent = item[rowKeys[ii]];
+        tableDataEl.setAttribute("id", item['jobID'] + rowKeys[ii]);
+        tableDataEl.setAttribute("dataRowNumber", item['jobID']);
+        tableDataEl.setAttribute("dataKey", rowKeys[ii]);
+        tableDataEl.setAttribute("style", "text-align: center;");
+        rowElement.appendChild(tableDataEl);
+      }
+    }
+    rowElement.setAttribute("style", "background-color:" + rowcol + "; border-top:2px solid #555;");
+    return rowElement;
+  }
+
+  //-------------------------------edit cells------------------------------------
+  function edit_cell(e) {
+    e.stopPropagation();
+    var rowNumber = e.target.getAttribute('dataRowNumber');
+    var objectKey = e.target.getAttribute('dataKey');
+    var id = e.target.id;
+    var new_value = prompt("Row: " + rowNumber + ", Column: " + objectKey, table_items1[rowNumber][objectKey]);
+    document.getElementById(id).innerHTML = new_value;
+    table_items1[rowNumber][objectKey] = new_value;
+  }
+
+
+  //----------------------------create image element-------------------------
+  function create_combined_image(id0, rot0, id1, rot1) {
+    //---calculate row number
+    var rowId0 = Math.floor(id0 / 100);
+    var rowId1 = Math.floor(id1 / 100);
+    //console.log("row: ",rowId1);
+    //---calculate column number
+    var columnId0 = id0 % 100;
+    var columnId1 = id1 % 100;
+    //console.log("column: ",columnId1);
+    //---calculate position in sprite sheet
+    rowId0Position = rowId0 * -60;
+    columnId0Position = columnId0 * -60;
+    rowId1Position = rowId1 * -60;
+    columnId1Position = columnId1 * -60;
+    //---calculate rotations
+    rotId0 = (rot0 * 90) * -1;
+    rotId1 = (rot1 * 90) * -1;
+    //--create background element
+    var BGImgDiv = document.createElement('div');
+    BGImgDiv.setAttribute("class", "BGImage");
+    BGImgDiv.setAttribute("style", "background:url(" + spriteSheet.src + ") -0px -600px;");
+    //----create container element
+    var imgContainerDiv = document.createElement('div');
+    imgContainerDiv.setAttribute("class", "imgContainer");
+    imgContainerDiv.appendChild(BGImgDiv);
+    //---create arrow elements
+    var imgDiv = document.createElement('div');
+    imgDiv.setAttribute("class", "imageDiv1");
+    imgDiv.setAttribute("style", "background:url(" + spriteSheet.src + ") " + columnId0Position + "px " + rowId0Position +
+      "px;  transform: rotate(" + rotId0 + "deg);");
+    imgContainerDiv.appendChild(imgDiv);
+    var imgDiv2 = document.createElement('div');
+    imgDiv2.setAttribute("class", "imageDiv2");
+    imgDiv2.setAttribute("style", "background:url(" + spriteSheet.src + ") " + columnId1Position + "px " + rowId1Position +
+      "px; transform: rotate(" + rotId1 + "deg);");
+    imgContainerDiv.appendChild(imgDiv2);
+
+    return imgContainerDiv;
+  }
+</script>
+
+</html>
